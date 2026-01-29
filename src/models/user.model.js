@@ -6,61 +6,60 @@ const ObjectId=Schema.Types.ObjectId;
 
 const userSchema=new Schema({
     username:{
-        type:string,
+        type:String,
         required:true,
         unique:true,
     },
     email:{
-        type:string,
+        type:String,
         required:true,
         unique:true,
     },
-    fullName:{
-        type:string,
+    fullname:{
+        type:String,
         required:true,
     },
     password:{
         unique:true,
-        type:string,
+        type:String,
         required:true,
     },
     avatar:{
-        type:string,
-        required:true
+        type:String,
     },
     coverImage:{
-        type:string
+        type:String
     },
     watchHistory:[{
         type:ObjectId,
         ref:"video"
     }],
     refreshToken:{
-        type:string
+        type:String
     },
     accessToken:{
-        type:string
+        type:String
     }
 },{timestamps:true});
 
-userSchema.pre("save",async (next)=>{
+userSchema.pre("save",async function (next){
     if(!this.isModified("password")) return next();
-    this.password=await bcrypt.hash(this.password,process.env.BCRYPT_SALT_ROUNDS);
+    this.password=await bcrypt.hash(this.password,10);
     console.log("changed password is saved in db",this.password);
     next();
 });
 
-userSchema.methods.isPasswordValid=async (password)=>{
+userSchema.methods.isPasswordValid=async function (password){
     return await bcrypt.compare(password,this.password);
 };
 
-userSchema.methods.generateRefreshToken=async()=>{
+userSchema.methods.generateRefreshToken=async function(){
     return jwt.sign({
         _id:this._id,
     },process.env.JWT_SECRET_REFRESH,{expiresIn:process.env.JWT_REFRESH_EXPIRY});
 };
 
-userSchema.methods.generateAccessToken=async()=>{
+userSchema.methods.generateAccessToken=async function(){
     return jwt.sign({
         _id:this._id,
         email:this.email,

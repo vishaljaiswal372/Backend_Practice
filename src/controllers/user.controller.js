@@ -1,22 +1,26 @@
-import AsyncHandler from "../utils/AsyncHandler";
-import ApiError from "../utils/ApiError";
-import ApiResponse from "../utils/ApiResponse";
-import { uploadInCloudinary } from "../utils/Cloudinary";
-import UserModel from "../models/user.model";
-import bcrypt from 'bcryptjs';
+import AsyncHandler from "../utils/AsyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import { uploadInCloudinary } from "../utils/Cloudinary.js";
+import UserModel from "../models/user.model.js";
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 const generateTokens=async(user)=>{
     const accessToken=user.generateAccessToken();
     const refreshToken=user.generateRefreshToken();
+    user.refreshToken=refreshToken;
+    await user.save({validateBeforeSave:false});
     return {accessToken,refreshToken};
 };
 
 
-const RegisterUser=async(req,res,next)=>{
+const RegisterUser=async(req,res)=>{
     try {
         const {username,email,fullname,password}=req.body;
-        //files are available in req.files
+
+        // //files are available in req.files
+
         if([username,email,fullname,password].some((field)=>!field)){
             throw new ApiError("All field are required to fill during registration",400);
         }
@@ -38,21 +42,21 @@ const RegisterUser=async(req,res,next)=>{
 
         const avatarUrl=uploadInCloudinary(avatarFilePath).url;
         const coverImageUrl=uploadInCloudinary(coverImageFilesPaths).url;
-        const encryptedPassword=await bcrypt.hash(password,process.env.BCRYPT_SALT_ROUNDS);
+        const encryptedPassword=await bcrypt.hash(password,10);
 
         const user=UserModel.create({
             username,
             email,
-            encryptedPassword,
+            password:encryptedPassword,
             fullname,
             avatarUrl,
-            coverImageUrl:coverImageUrl || "",
+            coverImage:coverImageUrl || "",
         });
 
         const createdUser=await UserModel.findById(user._id).select("-password -refreshToken");
-        if(!createdUser){
-            throw new ApiError("user is not registered something went wrong",400);
-        }
+        // if(!createdUser){
+        //     throw new ApiError("user is not registered something went wrong",400);
+        // }
 
         return res.status(200).json(new ApiResponse("user is registered successfully",createdUser,200));
 
@@ -62,14 +66,14 @@ const RegisterUser=async(req,res,next)=>{
     }
 };
 
-const loginUser=AsyncHandler(async(req,res)=>{
+const loginUser=async(req,res)=>{
     const {username,password}=req.body;
 
     if(!username || !password){
         throw new ApiError("username and password are required for login",400);
     }
 
-    const user=await UserModel.findOne(username);
+    const user=await UserModel.findOne({username});
     if(!user){
         throw new ApiError("user is not registered",400);
     }
@@ -81,15 +85,21 @@ const loginUser=AsyncHandler(async(req,res)=>{
     }
 
     const {accessToken,refreshToken}=await generateTokens(user);
-    user.refreshToken=refreshToken;
-    await user.save({validateBeforeSave:false});
+
+    console.log("accessToken",accessToken);
+    console.log("refreshToken",refreshToken);
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
 
     return res.status(200).
-    cookie("accessToken",accessToken).
-    cookie("refreshToken",refreshToken).
+    cookie("accessToken",accessToken,options).
+    cookie("refreshToken",refreshToken,options).
     json(new ApiResponse("user is logged in successfully",{accessToken,refreshToken},200))
     
-});
+};
 
 
 

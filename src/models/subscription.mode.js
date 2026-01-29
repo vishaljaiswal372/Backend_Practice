@@ -11,7 +11,7 @@ const subscriptionSchema=new Schema({
         type:ObjectId,
         ref:"user",
     },
-});
+}); // {a,cwc} {b,ht} {c,ht} {c,cwc}
 
 const SubscriptionModel=mongoose.model("subscription",subscriptionSchema);
 

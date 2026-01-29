@@ -6,7 +6,11 @@ import UserModel from "../models/user.model";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-
+const generateTokens=async(user)=>{
+    const accessToken=user.generateAccessToken();
+    const refreshToken=user.generateRefreshToken();
+    return {accessToken,refreshToken};
+};
 
 
 const RegisterUser=async(req,res,next)=>{
@@ -39,7 +43,7 @@ const RegisterUser=async(req,res,next)=>{
         const user=UserModel.create({
             username,
             email,
-            password,
+            encryptedPassword,
             fullname,
             avatarUrl,
             coverImageUrl:coverImageUrl || "",
@@ -58,6 +62,34 @@ const RegisterUser=async(req,res,next)=>{
     }
 };
 
+const loginUser=AsyncHandler(async(req,res)=>{
+    const {username,password}=req.body;
+
+    if(!username || !password){
+        throw new ApiError("username and password are required for login",400);
+    }
+
+    const user=await UserModel.findOne(username);
+    if(!user){
+        throw new ApiError("user is not registered",400);
+    }
+
+    const isPasswordValid=user.isPasswordValid(password);
+
+    if(!isPasswordValid){
+        throw new ApiError("enter valid password",400);
+    }
+
+    const {accessToken,refreshToken}=await generateTokens(user);
+    user.refreshToken=refreshToken;
+    await user.save({validateBeforeSave:false});
+
+    return res.status(200).
+    cookie("accessToken",accessToken).
+    cookie("refreshToken",refreshToken).
+    json(new ApiResponse("user is logged in successfully",{accessToken,refreshToken},200))
+    
+});
 
 
 
@@ -65,5 +97,7 @@ const RegisterUser=async(req,res,next)=>{
 
 
 
-
-export {RegisterUser};
+export {
+    RegisterUser,
+    loginUser
+};

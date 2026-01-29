@@ -38,6 +38,9 @@ const userSchema=new Schema({
     refreshToken:{
         type:string
     },
+    accessToken:{
+        type:string
+    }
 },{timestamps:true});
 
 userSchema.pre("save",async (next)=>{

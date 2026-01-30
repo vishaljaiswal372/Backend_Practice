@@ -99,7 +99,6 @@ const loginUser=async(req,res)=>{
     cookie("accessToken",accessToken,options).
     cookie("refreshToken",refreshToken,options).
     json(new ApiResponse("user is logged in successfully",{accessToken,refreshToken},200))
-    
 };
 
 

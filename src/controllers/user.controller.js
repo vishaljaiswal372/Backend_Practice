@@ -44,7 +44,7 @@ const RegisterUser=async(req,res)=>{
         const coverImageUrl=uploadInCloudinary(coverImageFilesPaths).url;
         const encryptedPassword=await bcrypt.hash(password,10);
 
-        const user=UserModel.create({
+        const user=await UserModel.create({
             username,
             email,
             password:encryptedPassword,
@@ -54,9 +54,10 @@ const RegisterUser=async(req,res)=>{
         });
 
         const createdUser=await UserModel.findById(user._id).select("-password -refreshToken");
-        // if(!createdUser){
-        //     throw new ApiError("user is not registered something went wrong",400);
-        // }
+
+        if(!createdUser){
+            throw new ApiError("user is not registered something went wrong",400);
+        }
 
         return res.status(200).json(new ApiResponse("user is registered successfully",createdUser,200));
 

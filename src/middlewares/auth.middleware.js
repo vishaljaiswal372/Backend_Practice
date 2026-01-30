@@ -12,7 +12,7 @@ const authMiddleware=async(req,res,next)=>{
         }
 
         const user=await jwt.verify(refreshToken,process.env.JWT_SECRET_REFRESH);
-        req.user=user._id;
+        req.userId=user._id;
         next();
 
     } catch (error) {

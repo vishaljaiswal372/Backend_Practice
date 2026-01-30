@@ -101,6 +101,19 @@ const loginUser=async(req,res)=>{
     json(new ApiResponse("user is logged in successfully",{accessToken,refreshToken},200))
 };
 
+const changeUserPassword=async(req,res)=>{
+    const userId=req.userId;
+    const {oldPassword,newPassword}=req.body;
+    const user=await UserModel.findById(userId);
+    const isOldPasswordValid=await user.isPasswordValid(oldPassword);
+    if(!isOldPasswordValid){
+        throw new ApiResponse("please enter correct old password",null,400);
+    }
+    user.password=newPassword;
+    await user.save({validateBeforeSave:false});
+    return res.status(200).json(new ApiResponse("password changed successfully",null,200));
+};
+
 
 
 
@@ -109,5 +122,6 @@ const loginUser=async(req,res)=>{
 
 export {
     RegisterUser,
-    loginUser
+    loginUser,
+    changeUserPassword
 };

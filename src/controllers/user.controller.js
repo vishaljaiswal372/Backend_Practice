@@ -90,16 +90,24 @@ const loginUser=async(req,res)=>{
     console.log("accessToken",accessToken);
     console.log("refreshToken",refreshToken);
 
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
+    const optionsForRefresh={
+        httpOnly:true,
+        secure:true,
+        maxAge:15*24*60*60*1000,
+    };
+
+    const optionsForAccess={
+        httpOnly:true,
+        secure:true,
+        maxAge:24*60*60*1000,
+    };
 
     return res.status(200).
-    cookie("accessToken",accessToken,options).
-    cookie("refreshToken",refreshToken,options).
+    cookie("accessToken",accessToken,optionsForAccess).
+    cookie("refreshToken",refreshToken,optionsForRefresh).
     json(new ApiResponse("user is logged in successfully",{accessToken,refreshToken},200))
 };
+
 
 const changeUserPassword=async(req,res)=>{
     const userId=req.userId;
@@ -114,6 +122,40 @@ const changeUserPassword=async(req,res)=>{
     return res.status(200).json(new ApiResponse("password changed successfully",null,200));
 };
 
+const getUserDetails=async(req,res)=>{
+    const userId=req.userId;
+    const user=await UserModel.findById(userId).select("-refreshToken");
+    if(!user){
+        throw new ApiError("user not found",400);
+    }
+    return res.status(200).json(new ApiResponse("user details fetched successfully",user,200));
+};
+
+const logOutUser=async(req,res)=>{
+    const userId=req.userId;
+    const user=await UserModel.findById(userId);
+    if(!user){
+        throw new ApiError("user not found",400);
+    }
+    user.refreshToken="";
+    await user.save({validateBeforeSave:false});
+    const optionsForRefresh={
+        httpOnly:true,
+        secure:true,
+        maxAge:15*24*60*60*1000,
+    };
+
+    const optionsForAccess={
+        httpOnly:true,
+        secure:true,
+        maxAge:24*60*60*1000,
+    };
+    return res.status(200).
+    clearCookie("refreshToken",optionsForRefresh).
+    clearCookie("accessToken",optionsForAccess).
+    json(new ApiResponse("user logged out successfully",null,200));
+};
+
 
 
 
@@ -123,5 +165,8 @@ const changeUserPassword=async(req,res)=>{
 export {
     RegisterUser,
     loginUser,
-    changeUserPassword
+    changeUserPassword,
+    generateTokens,
+    getUserDetails,
+    logOutUser
 };

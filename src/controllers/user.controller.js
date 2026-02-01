@@ -45,11 +45,11 @@ const RegisterUser=async(req,res)=>{
         const encryptedPassword=await bcrypt.hash(password,10);
 
         const user=await UserModel.create({
-            username,
-            email,
+            username:username,
+            email:email,
             password:encryptedPassword,
-            fullname,
-            avatarUrl,
+            fullname:fullname,
+            avatar:avatarUrl,
             coverImage:coverImageUrl || "",
         });
 
@@ -169,6 +169,24 @@ const updateUserDetails=async(req,res)=>{
     return res.status(200).json(new ApiResponse("user details updated successfully",user,200));
 };
 
+const updateAvatar=async(req,res)=>{
+    const userId=req.userId;
+    const user=await UserModel.findById(userId).select("-password -refreshToken -username -fullname -email -coverImage");
+    if(!user){
+        throw new ApiError("user not found",400);
+    }
+    //const avatarFilePath=req.files?.avatar[0]?.path; // if you use upload.fields([{name:"avatar",maxCount:1}])
+    const avatarFilePath=req.files[0].path; // if you use upload.array("avatar",1)
+    if(!avatarFilePath){
+        throw new ApiError("avatar path is not available",400);
+    }
+    const avatarUrl=uploadInCloudinary(avatarFilePath).url;
+    user.avatar=avatarUrl;
+    await user.save({validateBeforeSave:false});
+    return res.status(200).json(new ApiResponse("avatar updated successfully",user,200));
+};
+
+
 
 
 
@@ -182,5 +200,6 @@ export {
     generateTokens,
     getUserDetails,
     logOutUser,
-    updateUserDetails
+    updateUserDetails,
+    updateAvatar
 };

@@ -186,6 +186,22 @@ const updateAvatar=async(req,res)=>{
     return res.status(200).json(new ApiResponse("avatar updated successfully",user,200));
 };
 
+const updateCoverImage=async(req,res)=>{
+    const userId=req.userId;
+    const user=await UserModel.findById(userId).select("-password -refreshToken -username -fullname -email -avatar");
+    if(!user){
+        throw new ApiError("user not found",400);
+    }
+    const coverImageFilePath=req.files[0].path;
+    if(!coverImageFilePath){
+        throw new ApiError("cover image path is not available",400);
+    }
+    const coverImageUrl=uploadInCloudinary(coverImageFilePath).url;
+    user.coverImage=coverImageUrl;
+    await user.save({validateBeforeSave:false});
+    return res.status(200).json(new ApiResponse("cover image updated successfully",user,200));
+};
+
 
 
 
@@ -201,5 +217,6 @@ export {
     getUserDetails,
     logOutUser,
     updateUserDetails,
-    updateAvatar
+    updateAvatar,
+    updateCoverImage
 };

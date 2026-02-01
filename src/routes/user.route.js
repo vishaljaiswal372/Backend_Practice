@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import {RegisterUser,loginUser,changeUserPassword,getUserDetails,logOutUser,updateUserDetails,updateAvatar} from '../controllers/user.controller.js';
+import {RegisterUser,loginUser,changeUserPassword,getUserDetails,logOutUser,updateUserDetails,updateAvatar,updateCoverImage} from '../controllers/user.controller.js';
 import upload from '../middlewares/multer.middleware.js'; // upload is a middleware
 import authMiddleware from '../middlewares/auth.middleware.js';
 
@@ -35,7 +35,9 @@ updateAvatar); // => const avatarFilePath=req.files[0]?.path;
 //userRouter.patch('/update-avatar',authMiddleware,upload.single("avatar"),updateAvatar); // => const avatarFilePath=req.file?.path;
 
 
-
+userRouter.patch('/update-cover-image',authMiddleware,
+    upload.array("coverImage",1),
+updateCoverImage);
 
 
 

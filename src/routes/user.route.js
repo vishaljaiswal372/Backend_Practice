@@ -19,8 +19,10 @@ userRouter.post('/register', upload.fields([
 userRouter.post('/login',loginUser);
 userRouter.get('/user-details',authMiddleware,getUserDetails);
 userRouter.post('/logout',authMiddleware,logOutUser);
-userRouter.post('/change-password',authMiddleware,changeUserPassword);
-userRouter.post('/update-details',authMiddleware,updateUserDetails);
+userRouter.patch('/change-password',authMiddleware,changeUserPassword);
+userRouter.patch('/update-details',authMiddleware,updateUserDetails);
+
+
 
 
 

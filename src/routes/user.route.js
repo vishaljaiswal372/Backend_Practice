@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import {RegisterUser,loginUser,changeUserPassword,getUserDetails,logOutUser} from '../controllers/user.controller.js';
+import {RegisterUser,loginUser,changeUserPassword,getUserDetails,logOutUser,updateUserDetails} from '../controllers/user.controller.js';
 import upload from '../middlewares/multer.middleware.js'; // upload is a middleware
 import authMiddleware from '../middlewares/auth.middleware.js';
 
@@ -20,6 +20,7 @@ userRouter.post('/login',loginUser);
 userRouter.get('/user-details',authMiddleware,getUserDetails);
 userRouter.post('/logout',authMiddleware,logOutUser);
 userRouter.post('/change-password',authMiddleware,changeUserPassword);
+userRouter.post('/update-details',authMiddleware,updateUserDetails);
 
 
 

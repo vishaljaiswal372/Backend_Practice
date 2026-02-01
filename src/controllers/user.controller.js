@@ -156,6 +156,19 @@ const logOutUser=async(req,res)=>{
     json(new ApiResponse("user logged out successfully",null,200));
 };
 
+const updateUserDetails=async(req,res)=>{
+    const userId=req.userId;
+    const user=await UserModel.findById(userId).select("-password -refreshToken -username");
+    if(!user){
+        throw new ApiError("user not found",400);
+    }
+    const {fullname,email}=req.body;
+    user.fullname=fullname || user.fullname;
+    user.email=email || user.email;
+    await user.save({validateBeforeSave:false});
+    return res.status(200).json(new ApiResponse("user details updated successfully",user,200));
+};
+
 
 
 
@@ -168,5 +181,6 @@ export {
     changeUserPassword,
     generateTokens,
     getUserDetails,
-    logOutUser
+    logOutUser,
+    updateUserDetails
 };

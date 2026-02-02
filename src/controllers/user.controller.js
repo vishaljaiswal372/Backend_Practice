@@ -169,6 +169,30 @@ const updateUserDetails=async(req,res)=>{
     return res.status(200).json(new ApiResponse("user details updated successfully",user,200));
 };
 
+// const updateUserDetails = asyncHandler(async(req, res) => {
+//     const {fullName, email} = req.body
+
+//     if (!fullName || !email) {
+//         throw new ApiError(400, "All fields are required")
+//     }
+
+//     const user = await User.findByIdAndUpdate(
+//         req.user?._id,
+//         {
+//             $set: {
+//                 fullName,
+//                 email: email
+//             }
+//         },
+//         {new: true}
+        
+//     ).select("-password")
+
+//     return res
+//     .status(200)
+//     .json(new ApiResponse(200, user, "Account details updated successfully"))
+// });
+
 const updateAvatar=async(req,res)=>{
     const userId=req.userId;
     const user=await UserModel.findById(userId).select("-password -refreshToken -username -fullname -email -coverImage");
@@ -188,17 +212,22 @@ const updateAvatar=async(req,res)=>{
 
 const updateCoverImage=async(req,res)=>{
     const userId=req.userId;
-    const user=await UserModel.findById(userId).select("-password -refreshToken -username -fullname -email -avatar");
-    if(!user){
-        throw new ApiError("user not found",400);
-    }
-    const coverImageFilePath=req.files[0].path;
+    const coverImageFilePath=req.files[0]?.path;
     if(!coverImageFilePath){
         throw new ApiError("cover image path is not available",400);
     }
     const coverImageUrl=uploadInCloudinary(coverImageFilePath).url;
-    user.coverImage=coverImageUrl;
-    await user.save({validateBeforeSave:false});
+    // user.coverImage=coverImageUrl;
+    // await user.save({validateBeforeSave:false});
+    const user=await UserModel.findByIdAndUpdate(
+        userId,
+        {
+            $set:{
+                coverImage:coverImageUrl
+            }
+        },
+        {new:true},
+    );
     return res.status(200).json(new ApiResponse("cover image updated successfully",user,200));
 };
 

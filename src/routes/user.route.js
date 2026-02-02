@@ -43,21 +43,4 @@ updateCoverImage);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export {userRouter};

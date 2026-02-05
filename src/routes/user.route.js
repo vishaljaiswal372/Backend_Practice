@@ -1,5 +1,14 @@
 import {Router} from 'express';
-import {RegisterUser,loginUser,changeUserPassword,getUserDetails,logOutUser,updateUserDetails,updateAvatar,updateCoverImage} from '../controllers/user.controller.js';
+import {RegisterUser,
+    loginUser,
+    changeUserPassword,
+    getUserDetails,
+    logOutUser,
+    updateUserDetails,
+    updateAvatar,
+    updateCoverImage,
+    getUserChannelProfile
+} from '../controllers/user.controller.js';
 import upload from '../middlewares/multer.middleware.js'; // upload is a middleware
 import authMiddleware from '../middlewares/auth.middleware.js';
 
@@ -39,7 +48,7 @@ userRouter.patch('/update-cover-image',authMiddleware,
     upload.array("coverImage",1),
 updateCoverImage);
 
-
+userRouter.get('/channel/:username',getUserChannelProfile);
 
 
 
